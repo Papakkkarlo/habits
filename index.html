@@ -3,9 +3,23 @@
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://unpkg.com/d3-3d/build/d3-3d.min.js"></script>
 <body>
-<svg width="1200" height="800"></svg>
+<svg width="1100" height="800"></svg>
+<div id="legend">
+    <div style="display: flex; align-items: center;">
+        <div style="background-color: red;"></div>
+        <div>Аптеки и кафе</div>
+    </div>
+    <div style="display: flex; align-items: center;">
+        <div style="background-color: blue;"></div>
+        <div id="mcc">-</div>
+    </div>
+</div>
 <div id="info" style="opacity:0;"></div>
 <style type="text/css">
+body{
+    font-family: 'Rubik';
+    font-size: 20px;
+}
 button {
     position: absolute;
     right: 10px;
@@ -22,12 +36,30 @@ path{
     border-radius: 4px;
     font-size: 20px;
 }
+#info > div > a{
+    text-decoration: none;
+}
+#legend{
+    position: absolute;
+    bottom: 10px; right: 10px;
+    border: 1px solid rgba(0,0,0,0.4);
+    border-radius: 4px;
+    padding: 10px;
+}
+#legend > div div:first-child{
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
 </style>
 <script>
     const TARGET = [5912,5812]
     const RANGE = [0,200];
     const fill = 'rgba(0,0,0,0)';
     var origin = [700, 500],
+    MCC = null,
+    NAMES = {5912: 'Аптеки', 5812: 'Кафе'} 
     j = 10, 
     scale = 2,
     DATA = [], 
@@ -96,8 +128,7 @@ path{
             .attr('stroke-width', 1)
             .attr('stroke', '#000')
             .attr('opacity', .4)
-            .attr('d', plane3d.draw)
-            .on('mouseover', d=>console.log('Over plane'));
+            .attr('d', plane3d.draw);
         plane.exit().remove();
 
         /* ----------- POINTS ----------- */
@@ -115,12 +146,18 @@ path{
             .attr('opacity', 1)
             .attr('cx', d=>d.projected.x)
             .attr('cy', d=>d.projected.y)
-            .attr('fill', d=> d.pair[0] === TARGET[0] && d.pair[1] === TARGET[1] ? 'blue' : 'grey')
+            .attr('fill', d=> d.pair[0] === TARGET[0] && d.pair[1] === TARGET[1] ? 'red' : d.pair[0] === +MCC || d.pair[1] === +MCC ? 'blue' :'grey')
             .on('mouseover', d=>{
                 d3.select('#info').style('opacity', 1).html(`
-                    <div>X: <a href="https://mcc-codes.ru/code/${d.pair[0]}">${d.pair[0]}</a></div>
-                    <div>Y: <a href="https://mcc-codes.ru/code/${d.pair[1]}">${d.pair[1]}</a></div>`
-            )});
+                    <div>X: <a class="mcc" id="${d.pair[0]}" href="https://mcc-codes.ru/code/${d.pair[0]}">${NAMES[d.pair[0]]||d.pair[0]}</a></div>
+                    <div>Y: <a class="mcc" id="${d.pair[1]}" href="https://mcc-codes.ru/code/${d.pair[1]}">${NAMES[d.pair[1]]||d.pair[1]}</a></div>`
+                );
+                d3.selectAll('.mcc').on('mouseover', function(){
+                    MCC = this.id;
+                    d3.select('#mcc').text(NAMES[+this.id] || this.id)
+                    processData(data, 0)
+                });
+            });
 
         //points.exit().remove();
 
