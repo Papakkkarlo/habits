@@ -3,19 +3,24 @@
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://unpkg.com/d3-3d/build/d3-3d.min.js"></script>
 <body>
-<svg width="1200" height="1000"></svg>
-<div id="info"></div>
+<svg width="1200" height="800"></svg>
+<div id="info" style="opacity:0;"></div>
 <style type="text/css">
 button {
     position: absolute;
     right: 10px;
     top: 10px;
 }
+path{
+    pointer-events: none;
+}
 #info{
     position: absolute;
     bottom: 0px; left: 0px;
-    border: 1px solid #000;
+    border: 1px solid rgba(0,0,0,0.4);
     padding: 20px;
+    border-radius: 4px;
+    font-size: 20px;
 }
 </style>
 <script>
@@ -91,7 +96,8 @@ button {
             .attr('stroke-width', 1)
             .attr('stroke', '#000')
             .attr('opacity', .4)
-            .attr('d', plane3d.draw);
+            .attr('d', plane3d.draw)
+            .on('mouseover', d=>console.log('Over plane'));
         plane.exit().remove();
 
         /* ----------- POINTS ----------- */
@@ -102,21 +108,21 @@ button {
             .append('circle')
             .attr('class', '_3d')
             .attr('opacity', 1)
-            .attr('cx', d=>d.projected.x)
-            .attr('cy', d=>d.projected.y)
+            // .attr('cx', d=>d.projected.x)
+            // .attr('cy', d=>d.projected.y)
             .merge(points)
-            //.transition().duration(duration)
             .attr('r', 10)
-            .attr('fill', d=>d.pair[0] === TARGET[0] || d.pair[1] === TARGET[0] ? 'red' :'gray')
             .attr('opacity', 1)
             .attr('cx', d=>d.projected.x)
             .attr('cy', d=>d.projected.y)
-            .on('mouseover', d=>d3.select('#info').html(`
-                <div>X: <a href="https://mcc-codes.ru/code/${d.pair[0]}">${d.pair[0]}</a></div>
-                <div>Y: <a href="https://mcc-codes.ru/code/${d.pair[1]}">${d.pair[1]}</a></div>`
-            ));
+            .attr('fill', d=> d.pair[0] === TARGET[0] && d.pair[1] === TARGET[1] ? 'blue' : 'grey')
+            .on('mouseover', d=>{
+                d3.select('#info').style('opacity', 1).html(`
+                    <div>X: <a href="https://mcc-codes.ru/code/${d.pair[0]}">${d.pair[0]}</a></div>
+                    <div>Y: <a href="https://mcc-codes.ru/code/${d.pair[1]}">${d.pair[1]}</a></div>`
+            )});
 
-        points.exit().remove();
+        //points.exit().remove();
 
         /* ----------- y-Scale ----------- */
 
